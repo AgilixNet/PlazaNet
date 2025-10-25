@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PlazaNetNegocio")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9b152c1512d373374375972c2a7718f4a6f99c69")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+be08e273c3303e0167345425dc8d87cb2275a8ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("PlazaNetNegocio")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PlazaNetNegocio")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
