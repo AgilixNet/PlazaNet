@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Users, BarChart3, Package, CheckCircle, Menu, X, ArrowRight, Zap, Shield, TrendingUp, Upload, FileText, CheckCircle2 } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import axiosClient from '../axiosClient'; // Ruta correcta de importación
 
 export default function LandingPage({ onShowLogin }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // Estado del modal
   const [selectedPlan, setSelectedPlan] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -94,7 +94,7 @@ export default function LandingPage({ onShowLogin }) {
     setLoading(true);
 
     try {
-      // 1. Subir archivos a Supabase Storage
+      // Subir archivos a Supabase Storage
       let cedulaUrl = null;
       let rutUrl = null;
 
@@ -118,22 +118,18 @@ export default function LandingPage({ onShowLogin }) {
         rutUrl = supabase.storage.from('documentos').getPublicUrl(fileName).data.publicUrl;
       }
 
-      // 2. Guardar datos en la base de datos
-      const { data, error } = await supabase
-        .from('solicitudes')
-        .insert([
-          {
-            nombre_representante: formData.nombre_representante,
-            email: formData.email,
-            telefono: formData.telefono,
-            nombre_plaza: formData.nombre_plaza,
-            tipo_suscripcion: formData.tipo_suscripcion,
-            cedula_url: cedulaUrl,
-            rut_url: rutUrl
-          }
-        ]);
+      // Hacer la solicitud POST para crear la solicitud
+      const response = await axiosClient.post('/api/solicitudes', {
+        nombre_representante: formData.nombre_representante,
+        email: formData.email,
+        telefono: formData.telefono,
+        nombre_plaza: formData.nombre_plaza,
+        tipo_suscripcion: formData.tipo_suscripcion,
+        cedula_url: cedulaUrl,
+        rut_url: rutUrl,
+      });
 
-      if (error) throw error;
+      if (response.status !== 201) throw new Error('Error al crear la solicitud');
 
       setSuccess(true);
       setTimeout(() => {
@@ -157,201 +153,8 @@ export default function LandingPage({ onShowLogin }) {
     }
   };
 
-  const openModal = (planId) => {
-    setSelectedPlan(planId);
-    setFormData(prev => ({ ...prev, tipo_suscripcion: planId }));
-    setShowModal(true);
-  };
-
-  const features = [
-    {
-      icon: <ShoppingCart className="w-8 h-8" />,
-      title: "Gestión de Ventas",
-      description: "Control total de ventas, inventarios y transacciones en tiempo real"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Administración de Locatarios",
-      description: "Gestiona todos tus comerciantes y sus pagos desde un solo lugar"
-    },
-    {
-      icon: <BarChart3 className="w-8 h-8" />,
-      title: "Reportes y Analíticas",
-      description: "Dashboards inteligentes con métricas clave de tu plaza"
-    },
-    {
-      icon: <Package className="w-8 h-8" />,
-      title: "Control de Inventario",
-      description: "Seguimiento automático de productos y stock en cada local"
-    }
-  ];
-
-  const benefits = [
-    "Reduce tiempos administrativos en un 70%",
-    "Aumenta la transparencia operativa",
-    "Digitaliza todos tus procesos",
-    "Acceso desde cualquier dispositivo",
-    "Soporte técnico 24/7",
-    "Actualizaciones automáticas"
-  ];
-
-  const testimonials = [
-    {
-      name: "María González",
-      role: "Administradora Plaza Central",
-      text: "PlazaNet transformó completamente nuestra operación. Ahora todo es más eficiente y transparente."
-    },
-    {
-      name: "Carlos Ramírez",
-      role: "Director Mercado Norte",
-      text: "La mejor inversión que hemos hecho. El retorno fue inmediato en productividad."
-    },
-    {
-      name: "Ana Martínez",
-      role: "Gerente Plaza del Sur",
-      text: "Increíble cómo simplificó nuestra gestión diaria. Los reportes son espectaculares."
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Modal de Solicitud */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-slate-800 z-10">
-              <h3 className="text-2xl font-bold text-white">
-                Solicitar Plan {plans.find(p => p.id === selectedPlan)?.name}
-              </h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {success ? (
-              <div className="p-12 text-center">
-                <CheckCircle2 className="w-20 h-20 text-green-400 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-white mb-2">¡Solicitud Enviada!</h3>
-                <p className="text-gray-300">Nos pondremos en contacto contigo pronto.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                <div>
-                  <label className="block text-white font-semibold mb-2">
-                    Nombre del Representante Legal *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.nombre_representante}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nombre_representante: e.target.value }))}
-                    className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Juan Pérez"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-white font-semibold mb-2">
-                    Nombre de la Plaza de Mercado *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.nombre_plaza}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nombre_plaza: e.target.value }))}
-                    className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Plaza Central"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-white font-semibold mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="email@ejemplo.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white font-semibold mb-2">
-                      Teléfono
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.telefono}
-                      onChange={(e) => setFormData(prev => ({ ...prev, telefono: e.target.value }))}
-                      className="w-full px-4 py-3 bg-slate-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="+57 300 123 4567"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-white font-semibold mb-2">
-                    Copia de la Cédula *
-                  </label>
-                  <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                    <input
-                      type="file"
-                      id="cedula"
-                      required
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleFileChange(e, 'cedula')}
-                      className="hidden"
-                    />
-                    <label htmlFor="cedula" className="cursor-pointer">
-                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                      <p className="text-white font-semibold">
-                        {files.cedula ? files.cedula.name : 'Subir cédula'}
-                      </p>
-                      <p className="text-gray-400 text-sm">PDF, JPG o PNG (máx. 5MB)</p>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-white font-semibold mb-2">
-                    RUT de la Plaza de Mercado *
-                  </label>
-                  <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                    <input
-                      type="file"
-                      id="rut"
-                      required
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleFileChange(e, 'rut')}
-                      className="hidden"
-                    />
-                    <label htmlFor="rut" className="cursor-pointer">
-                      <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                      <p className="text-white font-semibold">
-                        {files.rut ? files.rut.name : 'Subir RUT'}
-                      </p>
-                      <p className="text-gray-400 text-sm">PDF, JPG o PNG (máx. 5MB)</p>
-                    </label>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-4 rounded-lg font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Enviando...' : 'Enviar Solicitud'}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Navbar */}
       <nav className={`fixed w-full z-40 transition-all duration-300 ${scrolled ? 'bg-slate-900/95 backdrop-blur-lg shadow-lg' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -630,11 +433,18 @@ export default function LandingPage({ onShowLogin }) {
                 className="border-2 border-white text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all"
               >
                 Acceder al Sistema
+      {/* Modal de Solicitud */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-slate-800 z-10">
+              <h3 className="text-2xl font-bold text-white">
+                Solicitar Plan {plans.find(p => p.id === selectedPlan)?.name}
+              </h3>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white">
+                <X className="w-6 h-6" />
               </button>
             </div>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-slate-900/50 border-t border-white/10 py-12 px-4 sm:px-6 lg:px-8">
@@ -644,9 +454,13 @@ export default function LandingPage({ onShowLogin }) {
               <div className="flex items-center space-x-2 mb-4">
                 <ShoppingCart className="w-6 h-6 text-purple-400" />
                 <span className="text-xl font-bold text-white">PlazaNet</span>
+            {success ? (
+              <div className="p-12 text-center">
+                <CheckCircle2 className="w-20 h-20 text-green-400 mx-auto mb-4" />
+                <h3 className="text-2xl font-bold text-white mb-2">¡Solicitud Enviada!</h3>
+                <p className="text-gray-300">Nos pondremos en contacto contigo pronto.</p>
               </div>
               <p className="text-gray-400">
-                La solución integral para la gestión operativa de plazas de mercado.
               </p>
             </div>
             <div>
@@ -676,9 +490,22 @@ export default function LandingPage({ onShowLogin }) {
           </div>
           <div className="border-t border-white/10 pt-8 text-center text-gray-400">
             <p>&copy; 2025 PlazaNet. Todos los derechos reservados.</p>
+            ) : (
+              <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                {/* Aquí van los campos del formulario */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-4 rounded-lg font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Enviando...' : 'Enviar Solicitud'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }
