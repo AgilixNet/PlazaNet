@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Users, BarChart3, Package, CheckCircle, Menu, X, ArrowRight, Zap, Shield, TrendingUp, Upload, FileText, CheckCircle2 } from 'lucide-react';
-import axiosClient from '../axiosClient'; // Ruta correcta de importación
 
-export default function LandingPage({ onShowLogin }) {
+export default function LandingPage({ onShowLogin = () => {} }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [showModal, setShowModal] = useState(false); // Estado del modal
+  const [showModal, setShowModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -30,6 +29,29 @@ export default function LandingPage({ onShowLogin }) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const features = [
+    {
+      icon: <ShoppingCart className="w-8 h-8 text-white" />,
+      title: 'Gestión de Ventas',
+      description: 'Control total de todas las transacciones en tiempo real'
+    },
+    {
+      icon: <Users className="w-8 h-8 text-white" />,
+      title: 'Gestión de Locales',
+      description: 'Administra todos tus locales desde un solo lugar'
+    },
+    {
+      icon: <BarChart3 className="w-8 h-8 text-white" />,
+      title: 'Reportes Avanzados',
+      description: 'Analíticas detalladas para tomar mejores decisiones'
+    },
+    {
+      icon: <Package className="w-8 h-8 text-white" />,
+      title: 'Inventario',
+      description: 'Seguimiento automático de stock y productos'
+    }
+  ];
 
   const plans = [
     {
@@ -82,6 +104,44 @@ export default function LandingPage({ onShowLogin }) {
     }
   ];
 
+  const benefits = [
+    'Reduce tiempos operativos en un 60%',
+    'Aumenta la precisión en reportes al 99%',
+    'Mejora la comunicación entre locales',
+    'Acceso desde cualquier dispositivo',
+    'Actualizaciones automáticas sin costo',
+    'Seguridad de datos garantizada'
+  ];
+
+  const testimonials = [
+    {
+      text: 'PlazaNet transformó completamente nuestra operación. Ahora tenemos control total de todos nuestros locales.',
+      name: 'María González',
+      role: 'Administradora - Plaza Central'
+    },
+    {
+      text: 'El mejor sistema de gestión que hemos usado. La atención al cliente es excepcional.',
+      name: 'Carlos Ramírez',
+      role: 'Gerente - Mercado del Sur'
+    },
+    {
+      text: 'Implementación rápida y resultados inmediatos. Muy recomendado para cualquier plaza.',
+      name: 'Ana Martínez',
+      role: 'Directora - Plaza Norte'
+    }
+  ];
+
+  const openModal = (planId) => {
+    setSelectedPlan(planId);
+    setFormData(prev => ({ ...prev, tipo_suscripcion: planId }));
+    setShowModal(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
@@ -90,68 +150,74 @@ export default function LandingPage({ onShowLogin }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      // Subir archivos a Supabase Storage
-      let cedulaUrl = null;
-      let rutUrl = null;
+  try {
+    const nombreLimpio = formData.nombre_representante
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, '-');
+    
+    const telefonoLimpio = formData.telefono.replace(/\D/g, '');
 
-      if (files.cedula) {
-        const fileName = `cedula_${Date.now()}_${files.cedula.name}`;
-        const { data, error } = await supabase.storage
-          .from('documentos')
-          .upload(fileName, files.cedula);
-        
-        if (error) throw error;
-        cedulaUrl = supabase.storage.from('documentos').getPublicUrl(fileName).data.publicUrl;
-      }
+    // Generar las URLs de los archivos
+    const cedulaUrl = `https://storage.example.com/cedula/${nombreLimpio}-${telefonoLimpio}.pdf`;
+    const rutUrl = `https://storage.example.com/rut/${nombreLimpio}-${telefonoLimpio}.pdf`;
 
-      if (files.rut) {
-        const fileName = `rut_${Date.now()}_${files.rut.name}`;
-        const { data, error } = await supabase.storage
-          .from('documentos')
-          .upload(fileName, files.rut);
-        
-        if (error) throw error;
-        rutUrl = supabase.storage.from('documentos').getPublicUrl(fileName).data.publicUrl;
-      }
+    // Crear el objeto solicitudData con las claves correctas
+    const solicitudData = {
+      nombreRepresentante: formData.nombre_representante,
+      email: formData.email,
+      telefono: formData.telefono,
+      nombrePlaza: formData.nombre_plaza,
+      tipoSuscripcion: formData.tipo_suscripcion,
+      cedulaUrl: cedulaUrl,
+      rutUrl: rutUrl
+    };
 
-      // Hacer la solicitud POST para crear la solicitud
-      const response = await axiosClient.post('/api/solicitudes', {
-        nombre_representante: formData.nombre_representante,
-        email: formData.email,
-        telefono: formData.telefono,
-        nombre_plaza: formData.nombre_plaza,
-        tipo_suscripcion: formData.tipo_suscripcion,
-        cedula_url: cedulaUrl,
-        rut_url: rutUrl,
-      });
+    console.log('Enviando datos:', solicitudData);
 
-      if (response.status !== 201) throw new Error('Error al crear la solicitud');
+    const response = await fetch('http://localhost:5000/api/solicitudes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(solicitudData)  // Enviar el objeto JSON
+    });
 
-      setSuccess(true);
-      setTimeout(() => {
-        setShowModal(false);
-        setSuccess(false);
-        setFormData({
-          nombre_representante: '',
-          email: '',
-          telefono: '',
-          nombre_plaza: '',
-          tipo_suscripcion: ''
-        });
-        setFiles({ cedula: null, rut: null });
-      }, 3000);
-
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Hubo un error al enviar la solicitud. Por favor intenta de nuevo.');
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Error ${response.status}: ${errorData}`);
     }
-  };
+
+    const data = await response.json();
+    console.log('Respuesta del servidor:', data);
+
+    setSuccess(true);
+    setTimeout(() => {
+      setShowModal(false);
+      setSuccess(false);
+      setFormData({
+        nombre_representante: '',
+        email: '',
+        telefono: '',
+        nombre_plaza: '',
+        tipo_suscripcion: ''
+      });
+      setFiles({ cedula: null, rut: null });
+      setSelectedPlan('');
+    }, 3000);
+
+  } catch (error) {
+    console.error('Error completo:', error);
+    alert('Error al enviar solicitud: ' + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -433,18 +499,11 @@ export default function LandingPage({ onShowLogin }) {
                 className="border-2 border-white text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all"
               >
                 Acceder al Sistema
-      {/* Modal de Solicitud */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-slate-800 z-10">
-              <h3 className="text-2xl font-bold text-white">
-                Solicitar Plan {plans.find(p => p.id === selectedPlan)?.name}
-              </h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white">
-                <X className="w-6 h-6" />
               </button>
             </div>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-slate-900/50 border-t border-white/10 py-12 px-4 sm:px-6 lg:px-8">
@@ -454,13 +513,9 @@ export default function LandingPage({ onShowLogin }) {
               <div className="flex items-center space-x-2 mb-4">
                 <ShoppingCart className="w-6 h-6 text-purple-400" />
                 <span className="text-xl font-bold text-white">PlazaNet</span>
-            {success ? (
-              <div className="p-12 text-center">
-                <CheckCircle2 className="w-20 h-20 text-green-400 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-white mb-2">¡Solicitud Enviada!</h3>
-                <p className="text-gray-300">Nos pondremos en contacto contigo pronto.</p>
               </div>
               <p className="text-gray-400">
+                La solución integral para la gestión de plazas de mercado.
               </p>
             </div>
             <div>
@@ -490,9 +545,111 @@ export default function LandingPage({ onShowLogin }) {
           </div>
           <div className="border-t border-white/10 pt-8 text-center text-gray-400">
             <p>&copy; 2025 PlazaNet. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
+
+      {/* Modal de Solicitud */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-white/10 flex justify-between items-center sticky top-0 bg-slate-800 z-10">
+              <h3 className="text-2xl font-bold text-white">
+                Solicitar Plan {plans.find(p => p.id === selectedPlan)?.name}
+              </h3>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {success ? (
+              <div className="p-12 text-center">
+                <CheckCircle2 className="w-20 h-20 text-green-400 mx-auto mb-4" />
+                <h3 className="text-2xl font-bold text-white mb-2">¡Solicitud Enviada!</h3>
+                <p className="text-gray-300">Nos pondremos en contacto contigo pronto.</p>
+              </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                {/* Aquí van los campos del formulario */}
+                <div>
+                  <label className="block text-white font-semibold mb-2">Nombre del Representante</label>
+                  <input
+                    type="text"
+                    name="nombre_representante"
+                    value={formData.nombre_representante}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg border border-white/10 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg border border-white/10 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">Teléfono</label>
+                  <input
+                    type="tel"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg border border-white/10 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">Nombre de la Plaza</label>
+                  <input
+                    type="text"
+                    name="nombre_plaza"
+                    value={formData.nombre_plaza}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg border border-white/10 focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">Cédula del Representante</label>
+                  <div className="flex items-center gap-2">
+                    <label className="flex-1 bg-slate-700 text-white px-4 py-3 rounded-lg border border-white/10 cursor-pointer hover:border-purple-500 transition flex items-center gap-2">
+                      <Upload className="w-5 h-5" />
+                      <span>{files.cedula ? files.cedula.name : 'Seleccionar archivo'}</span>
+                      <input
+                        type="file"
+                        onChange={(e) => handleFileChange(e, 'cedula')}
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2">RUT de la Plaza</label>
+                  <div className="flex items-center gap-2">
+                    <label className="flex-1 bg-slate-700 text-white px-4 py-3 rounded-lg border border-white/10 cursor-pointer hover:border-purple-500 transition flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      <span>{files.rut ? files.rut.name : 'Seleccionar archivo'}</span>
+                      <input
+                        type="file"
+                        onChange={(e) => handleFileChange(e, 'rut')}
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -504,7 +661,6 @@ export default function LandingPage({ onShowLogin }) {
             )}
           </div>
         </div>
-      </footer>
       )}
     </div>
   );

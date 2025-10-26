@@ -8,6 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers (API tradicional)
 builder.Services.AddControllers();
 
+// **AGREGAR CORS AQUÍ** 👇
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Swagger (para probar la API rápido)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -28,6 +39,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// **USAR CORS ANTES DE AUTHORIZATION** 👇
+app.UseCors();
 
 app.UseHttpsRedirection();
 
