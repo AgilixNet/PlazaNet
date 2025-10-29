@@ -1,59 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
+import { useState, useEffect } from 'react';
+import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import LandingPage from './components/LandingPage';
+import { supabase } from './supabaseClient';
 
-export default function App() {
+function App() {
+  const [currentView, setCurrentView] = useState('landing');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showLogin, setShowLogin] = useState(false);
 
+  // Verificar sesión al cargar la app
   useEffect(() => {
-    // Verificar sesión actual
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    checkSession();
 
-    // Escuchar cambios de autenticación
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    // Escuchar cambios en la autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      if (session?.user) {
+        setCurrentView('dashboard');
+      } else {
+        setCurrentView('landing');
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const checkSession = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
+      if (session?.user) {
+        setCurrentView('dashboard');
+      }
+    } catch (error) {
+      console.error('Error checking session:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = (userData) => {
     setUser(userData);
+    setCurrentView('dashboard');
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setShowLogin(false);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setCurrentView('landing');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
+  const handleShowLogin = () => {
+    setCurrentView('login');
+  };
+
+  // Mostrar loading mientras se verifica la sesión
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-2xl">Cargando...</div>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Cargando...</p>
+        </div>
       </div>
     );
   }
 
-  // Si está autenticado, mostrar dashboard
-  if (user) {
-    return <Dashboard user={user} onLogout={handleLogout} />;
-  }
-
-  // Si no está autenticado pero quiere hacer login
-  if (showLogin) {
-    return <Login onLogin={handleLogin} />;
-  }
-
-  // Por defecto, mostrar landing page
-  return <LandingPage onShowLogin={() => setShowLogin(true)} />;
+  return (
+    <>
+      {currentView === 'landing' && <LandingPage onShowLogin={handleShowLogin} />}
+      {currentView === 'login' && <Login onLogin={handleLogin} />}
+      {currentView === 'dashboard' && <Dashboard user={user} onLogout={handleLogout} />}
+    </>
+  );
 }
+
+export default App;

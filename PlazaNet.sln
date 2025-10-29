@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend_negocio", "backend_negocio", "{51A47667-68E0-3D2C-467B-195823F30A1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlazaNetNegocio", "backend_negocio\PlazaNetNegocio\PlazaNetNegocio.csproj", "{BDDDC7C2-CCA8-179E-2DC8-B22B23C3B51A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDDDC7C2-CCA8-179E-2DC8-B22B23C3B51A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDDDC7C2-CCA8-179E-2DC8-B22B23C3B51A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDDDC7C2-CCA8-179E-2DC8-B22B23C3B51A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDDDC7C2-CCA8-179E-2DC8-B22B23C3B51A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BDDDC7C2-CCA8-179E-2DC8-B22B23C3B51A} = {51A47667-68E0-3D2C-467B-195823F30A1A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BAA76C2B-2EF3-45F9-B3BC-2070DD59CBC0}
+	EndGlobalSection
+EndGlobal
