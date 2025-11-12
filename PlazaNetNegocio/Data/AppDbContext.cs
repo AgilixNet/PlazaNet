@@ -10,6 +10,7 @@ namespace PlazaNetNegocio.Data
         { }
 
         public DbSet<Solicitud> Solicitudes { get; set; }
+        public DbSet<Admin> Admins { get; set; }
 
         // Esto es opcional, pero útil si quieres tunear el mapeo.
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,6 +29,23 @@ namespace PlazaNetNegocio.Data
 
                 entity.Property(e => e.Id)
                       .HasDefaultValueSql("gen_random_uuid()");
+            });
+
+            modelBuilder.Entity<Admin>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Estado)
+                      .HasDefaultValue("activo");
+
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("timezone('utc'::text, now())");
+
+                entity.Property(e => e.Id)
+                      .HasDefaultValueSql("gen_random_uuid()");
+
+                // Email único
+                entity.HasIndex(e => e.Email).IsUnique();
             });
         }
     }

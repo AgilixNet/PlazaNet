@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\backend_negocio\\PlazaNetNegocio\\PlazaNetNegocio.csproj": {}
+    "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\PlazaNetNegocio\\PlazaNetNegocio.csproj": {}
   },
   "projects": {
-    "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\backend_negocio\\PlazaNetNegocio\\PlazaNetNegocio.csproj": {
+    "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\PlazaNetNegocio\\PlazaNetNegocio.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\backend_negocio\\PlazaNetNegocio\\PlazaNetNegocio.csproj",
+        "projectUniqueName": "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\PlazaNetNegocio\\PlazaNetNegocio.csproj",
         "projectName": "PlazaNetNegocio",
-        "projectPath": "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\backend_negocio\\PlazaNetNegocio\\PlazaNetNegocio.csproj",
+        "projectPath": "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\PlazaNetNegocio\\PlazaNetNegocio.csproj",
         "packagesPath": "C:\\Users\\PERSONAL\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\backend_negocio\\PlazaNetNegocio\\obj\\",
+        "outputPath": "C:\\Users\\PERSONAL\\OneDrive\\Escritorio\\Arquitectura\\plazanet\\PlazaNet\\PlazaNetNegocio\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\PERSONAL\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -44,6 +44,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "MailKit": {
+              "target": "Package",
+              "version": "[4.14.1, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[9.0.10, )"
@@ -61,6 +65,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.10, )"
+            },
+            "MimeKit": {
+              "target": "Package",
+              "version": "[4.14.0, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",

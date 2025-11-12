@@ -29,7 +29,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Inyección de dependencias para Repository y Service
 builder.Services.AddScoped<ISolicitudesRepository, SolicitudesRepository>();
+builder.Services.AddScoped<IAdminsRepository, AdminsRepository>();
 builder.Services.AddScoped<ISolicitudesService, SolicitudesService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
