@@ -36,12 +36,12 @@ builder.Configuration["Supabase:ServiceKey"] = Environment.GetEnvironmentVariabl
 // Controllers (API tradicional)
 builder.Services.AddControllers();
 
-// **AGREGAR CORS AQUÍ** 👇
+// Configurar CORS solo para https://plazanet.vercel.app
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("https://plazanet.vercel.app")
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
