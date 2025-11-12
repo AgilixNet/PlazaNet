@@ -1,0 +1,30 @@
+# Archivos de compilación
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+.vs/
+
+# Archivos de entorno - NUNCA SUBIR
+.env
+.env.local
+.env.*.local
+appsettings.Development.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Otros
+*.swp
+*~
+.idea/

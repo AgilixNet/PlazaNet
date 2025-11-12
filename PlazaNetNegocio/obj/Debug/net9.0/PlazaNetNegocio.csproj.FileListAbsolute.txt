@@ -307,3 +307,5 @@ C:\Users\PERSONAL\OneDrive\Escritorio\Arquitectura\plazanet\PlazaNet\PlazaNetNeg
 C:\Users\PERSONAL\OneDrive\Escritorio\Arquitectura\plazanet\PlazaNet\PlazaNetNegocio\bin\Debug\net9.0\PlazaNetNegocio.pdb
 C:\Users\PERSONAL\OneDrive\Escritorio\Arquitectura\plazanet\PlazaNet\PlazaNetNegocio\obj\Debug\net9.0\PlazaNetNegocio.genruntimeconfig.cache
 C:\Users\PERSONAL\OneDrive\Escritorio\Arquitectura\plazanet\PlazaNet\PlazaNetNegocio\obj\Debug\net9.0\ref\PlazaNetNegocio.dll
+C:\Users\PERSONAL\OneDrive\Escritorio\Arquitectura\plazanet\PlazaNet\PlazaNetNegocio\bin\Debug\net9.0\DotNetEnv.dll
+C:\Users\PERSONAL\OneDrive\Escritorio\Arquitectura\plazanet\PlazaNet\PlazaNetNegocio\bin\Debug\net9.0\Sprache.dll
