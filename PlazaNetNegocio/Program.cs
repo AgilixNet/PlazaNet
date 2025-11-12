@@ -25,6 +25,14 @@ builder.Configuration["EmailSettings:SmtpPassword"] = Environment.GetEnvironment
 builder.Configuration["EmailSettings:FromEmail"] = Environment.GetEnvironmentVariable("FROM_EMAIL") 
     ?? builder.Configuration["EmailSettings:FromEmail"];
 
+// Configurar variables de Supabase
+builder.Configuration["Supabase:Url"] = Environment.GetEnvironmentVariable("SUPABASE_URL") 
+    ?? builder.Configuration["Supabase:Url"];
+builder.Configuration["Supabase:AnonKey"] = Environment.GetEnvironmentVariable("SUPABASE_ANON_KEY") 
+    ?? builder.Configuration["Supabase:AnonKey"];
+builder.Configuration["Supabase:ServiceKey"] = Environment.GetEnvironmentVariable("SUPABASE_SERVICE_KEY") 
+    ?? builder.Configuration["Supabase:ServiceKey"];
+
 // Controllers (API tradicional)
 builder.Services.AddControllers();
 
@@ -52,6 +60,7 @@ builder.Services.AddScoped<ISolicitudesRepository, SolicitudesRepository>();
 builder.Services.AddScoped<IAdminsRepository, AdminsRepository>();
 builder.Services.AddScoped<ISolicitudesService, SolicitudesService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHttpClient<ISupabaseService, SupabaseService>();
 
 var app = builder.Build();
 

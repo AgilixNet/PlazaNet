@@ -11,6 +11,7 @@ namespace PlazaNetNegocio.Services
         private readonly ISolicitudesRepository _repo;
         private readonly IAdminsRepository _adminsRepo;
         private readonly IEmailService _emailService;
+        private readonly ISupabaseService _supabaseService;
         private readonly ILogger<SolicitudesService> _logger;
 
         private static readonly HashSet<string> TiposValidos =
@@ -23,11 +24,13 @@ namespace PlazaNetNegocio.Services
             ISolicitudesRepository repo,
             IAdminsRepository adminsRepo,
             IEmailService emailService,
+            ISupabaseService supabaseService,
             ILogger<SolicitudesService> logger)
         {
             _repo = repo;
             _adminsRepo = adminsRepo;
             _emailService = emailService;
+            _supabaseService = supabaseService;
             _logger = logger;
         }
 
@@ -117,7 +120,7 @@ namespace PlazaNetNegocio.Services
             var ok = await _repo.UpdateAsync(entity);
             if (!ok) return null;
 
-            // Si el estado cambió a "aprobada", crear admin y enviar credenciales
+            // Si el estado cambió a "aprobada", crear admin completo en Supabase
             if (estadoAnterior != "aprobada" && entity.Estado == "aprobada")
             {
                 try
@@ -130,7 +133,31 @@ namespace PlazaNetNegocio.Services
                         // Generar contraseña aleatoria segura
                         string passwordGenerada = GenerarPasswordSegura();
                         
-                        // Crear nuevo admin
+                        // 1. Crear usuario en Supabase Auth, plaza y perfil
+                        var (success, userId, plazaId, error) = await _supabaseService.CrearAdminPlazaCompleto(
+                            entity.Email,
+                            passwordGenerada,
+                            entity.NombreRepresentante,
+                            entity.NombrePlaza,
+                            entity.Telefono,
+                            entity.Id
+                        );
+
+                        if (!success)
+                        {
+                            _logger.LogError(
+                                "Error al crear admin en Supabase para solicitud {Id}: {Error}",
+                                entity.Id,
+                                error);
+                            throw new Exception($"Error al crear admin en Supabase: {error}");
+                        }
+
+                        _logger.LogInformation(
+                            "Admin creado en Supabase - UserId: {UserId}, PlazaId: {PlazaId}",
+                            userId,
+                            plazaId);
+
+                        // 2. Crear registro local en tabla admins
                         var nuevoAdmin = new Admin
                         {
                             Email = entity.Email,
@@ -147,11 +174,11 @@ namespace PlazaNetNegocio.Services
                         await _adminsRepo.CreateAsync(nuevoAdmin);
 
                         _logger.LogInformation(
-                            "Admin creado exitosamente para solicitud {Id} - Email: {Email}",
+                            "Admin local creado exitosamente para solicitud {Id} - Email: {Email}",
                             entity.Id,
                             entity.Email);
 
-                        // Enviar email con credenciales
+                        // 3. Enviar email con credenciales
                         await _emailService.SendCredencialesEmailAsync(
                             entity.Email,
                             entity.NombreRepresentante,
