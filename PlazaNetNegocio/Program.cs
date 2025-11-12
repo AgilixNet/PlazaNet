@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using PlazaNetNegocio.Data;
 using PlazaNetNegocio.Repositories;
 using PlazaNetNegocio.Services;
@@ -36,14 +37,44 @@ builder.Configuration["Supabase:ServiceKey"] = Environment.GetEnvironmentVariabl
 // Controllers (API tradicional)
 builder.Services.AddControllers();
 
-// Configurar CORS solo para https://plazanet.vercel.app
+// Configurar CORS (permitir dominios definidos por variable de entorno ALLOWED_ORIGINS)
+// Ejemplo de ALLOWED_ORIGINS: "https://plazanet.vercel.app;https://1234-abc.ngrok-free.app;https://*.ngrok-free.app"
+var allowedOriginsEnv = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+var allowedOrigins = (allowedOriginsEnv ?? "https://plazanet.vercel.app")
+    .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://plazanet.vercel.app")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        // Soporta coincidencia exacta y patrones con *.dominio (p.ej. https://*.ngrok-free.app) solo para DEV
+        policy.SetIsOriginAllowed(origin =>
+        {
+            // Exact match
+            if (allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+                return true;
+
+            // Wildcard subdomain match (https://*.example.com)
+            foreach (var allowed in allowedOrigins)
+            {
+                if (allowed.StartsWith("https://*.") || allowed.StartsWith("http://*."))
+                {
+                    var https = allowed.StartsWith("https://*.");
+                    var hostSuffix = allowed.Replace("https://*.", string.Empty)
+                                             .Replace("http://*.", string.Empty);
+                    if (Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+                        && uri.Host.EndsWith(hostSuffix, StringComparison.OrdinalIgnoreCase)
+                        && ((https && uri.Scheme == Uri.UriSchemeHttps) || (!https && uri.Scheme == Uri.UriSchemeHttp)))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        })
+        .AllowAnyMethod()
+        .AllowAnyHeader();
     });
 });
 
